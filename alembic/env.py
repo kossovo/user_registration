@@ -1,13 +1,11 @@
+import os
+import sys
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-
-import os, sys
-from dotenv import load_dotenv
-
 from db.base import Base
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

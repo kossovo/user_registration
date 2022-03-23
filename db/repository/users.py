@@ -1,9 +1,9 @@
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
-from schemas.users import UserCreate, UserValidation
-from db.models.users import Users
 from core.hashing import Hasher
+from db.models.users import Users
+from schemas.users import UserCreate, UserValidation
 
 
 def create_new_user(user: UserCreate, db: Session) -> Users:

@@ -1,19 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 from email.errors import MessageError
-from core.email import sendmail
-from core.configs import settings
+
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from api.utils import create_token, generate_random_code
+from core.configs import settings
+from core.email import sendmail
+from db.repository.users import (create_new_user, get_user_by_email,
+                                 update_user_by_id)
+from db.repository.verifications import (save_verification_code,
+                                         verification_check)
+from db.session import get_db
 from schemas.token import TokenData
 from schemas.users import UserCreate, UserShow, UserValidation
-from db.session import get_db
-from db.repository.users import create_new_user, get_user_by_email, update_user_by_id
-from db.repository.verifications import (
-    save_verification_code,
-    verification_check,
-)
 
 router = APIRouter()
 

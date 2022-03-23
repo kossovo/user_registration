@@ -1,6 +1,7 @@
+from typing import Optional
+
 from py import code
 from pydantic import BaseModel
-from typing import Optional
 
 
 class Token(BaseModel):

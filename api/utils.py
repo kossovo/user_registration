@@ -1,14 +1,15 @@
 import random
 import string
-from typing import Dict, Optional
 from datetime import timedelta
-from core.security import generate_jwt
+from typing import Dict, Optional
 
-from fastapi import Request, status, HTTPException, Response
+from fastapi import HTTPException, Request, Response, status
 from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
-from fastapi.security.utils import get_authorization_scheme_param
 from fastapi.security.oauth2 import OAuth2
+from fastapi.security.utils import get_authorization_scheme_param
+
 from core.configs import settings
+from core.security import generate_jwt
 from schemas.token import Token
 
 

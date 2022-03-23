@@ -1,9 +1,9 @@
 from py import code
 from sqlalchemy.orm import Session
 
-from schemas.token import TokenData as VerificationSchema
-from db.models.verifications import CodeVerification
 from core.hashing import Hasher
+from db.models.verifications import CodeVerification
+from schemas.token import TokenData as VerificationSchema
 
 
 def save_verification_code(

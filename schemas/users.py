@@ -1,5 +1,5 @@
-from datetime import datetime
 import uuid
+from datetime import datetime
 from typing import List, Optional
 
 from pydantic import UUID4, BaseModel, EmailStr, Field

@@ -1,17 +1,17 @@
 from datetime import timedelta
+
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi import Response
 from jose.exceptions import JWTError
 from sqlalchemy.orm import Session
 
 from api.utils import OAuth2PasswordBearerWithCookie, create_token
 from core.configs import settings
 from core.security import decode_jwt
-from db.session import get_db
-from db.repository.users import get_user_by_email
-from schemas.token import Token, TokenData
 from core.validators import is_valid_email
+from db.repository.users import get_user_by_email
+from db.session import get_db
+from schemas.token import Token, TokenData
 
 router = APIRouter()
 
