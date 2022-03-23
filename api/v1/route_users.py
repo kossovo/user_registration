@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from email.errors import MessageError
 from core.email import sendmail
+from core.configs import settings
 
-from api.utils import generate_random_code
+from api.utils import create_token, generate_random_code
 from schemas.token import TokenData
 from schemas.users import UserCreate, UserShow, UserValidation
 from db.session import get_db
@@ -23,7 +24,10 @@ def get_verification_msg(verification_code):
 
 @router.post("/register", response_model=UserShow)
 def create_user(
-    user: UserCreate, db: Session = Depends(get_db), realy_send_mail: bool = False
+    user: UserCreate,
+    response: Response,
+    db: Session = Depends(get_db),
+    realy_send_mail: bool = False,
 ):  # realy_send_mail - just for debugging
 
     existing_user = get_user_by_email(email=user.email, db=db)
@@ -65,6 +69,12 @@ def create_user(
     # As mentioned in Code verification model, this is just for a PoC. I recommend to use twilio
     save_verification_code(TokenData(email=user.email, code=verification_code), db=db)
 
+    # Create a token for email verification
+    create_token(
+        data={"sub": "register", "email": user.email, "code": verification_code},
+        response=response,
+        expire_minute=settings.JWT_EMAIL_TOKEN_EXPIRE_MINUTES,
+    )
     return created_user
 
 
@@ -85,6 +95,10 @@ def verify_code(data: TokenData, db: Session = Depends(get_db)):
     Returns:
         bool: return true if the code was verified
     """
+    print(f"---------------- TOKEN: {data.code, data.email} -------------------")
+    import pdb
+
+    pdb.set_trace
     check = verification_check(data=data, db=db)
 
     if not check:
@@ -109,4 +123,4 @@ def verify_code(data: TokenData, db: Session = Depends(get_db)):
             detail=f"You don't have the permission to update user {user.email}",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return True
+    return True if check else False

@@ -9,17 +9,18 @@ class Settings:
     PROJECT_VERSION: str = "1.0.1"
     PROJECT_DESCRIPTION: str = "Building a user registration API"
 
-    DATABASE_HOST: str = os.getenv("DB_HOST")
-    DATABASE_NAME: str = os.getenv("DB_NAME")
-    DATABASE_PORT: str = os.getenv("DB_PORT")
-    DATABASE_USER: str = os.getenv("DB_USER")
-    DATABASE_PASSWORD: str = os.getenv("DB_PASSWORD")
+    DATABASE_HOST: str = os.getenv("POSTGRES_HOST")
+    DATABASE_NAME: str = os.getenv("POSTGRES_DB")
+    DATABASE_PORT: str = os.getenv("POSTGRES_PORT")
+    DATABASE_USER: str = os.getenv("POSTGRES_USER")
+    DATABASE_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
     DATABASE_URL = str = os.getenv("DATABASE_URL")
 
     # Getting JWT params
     JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
     JWT_ALGORITHM = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 1
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 30
+    JWT_EMAIL_TOKEN_EXPIRE_MINUTES = 1
 
     # Mail
     MAIL_USERNAME: str = os.getenv("MAIL_USERNAME")
