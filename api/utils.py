@@ -1,15 +1,41 @@
 import random
 import string
 from typing import Dict, Optional
+from datetime import timedelta
+from core.security import generate_jwt
 
-from fastapi import Request, status, HTTPException
+from fastapi import Request, status, HTTPException, Response
 from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
 from fastapi.security.utils import get_authorization_scheme_param
 from fastapi.security.oauth2 import OAuth2
+from core.configs import settings
+from schemas.token import Token
 
 
 def generate_random_code(size: int = 4) -> str:
     return "".join(random.choices(string.ascii_uppercase, k=size))
+
+
+def create_token(data: Dict, response: Response, expire_minute: int):
+    """Generic function to create a JWT
+
+    Args:
+        data (Dict): Token data
+        response (Response): FastAPI Response
+        expire_minute (int): Token live time in minute
+
+    Returns:
+        Token: JW Token
+    """
+    access_token_expire = timedelta(minutes=expire_minute)
+    access_token = generate_jwt(data=data, expires_delta=access_token_expire)
+
+    # Store access token as cookies, activate httponly for more safety
+    response.set_cookie(
+        key="access_token", value=f"Bearer {access_token}", httponly=True
+    )
+
+    return Token(access_token=access_token, token_type="bearer")
 
 
 class OAuth2PasswordBearerWithCookie(OAuth2):

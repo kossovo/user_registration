@@ -5,14 +5,12 @@ from fastapi import Response
 from jose.exceptions import JWTError
 from sqlalchemy.orm import Session
 
-from api.utils import OAuth2PasswordBearerWithCookie
+from api.utils import OAuth2PasswordBearerWithCookie, create_token
 from core.configs import settings
-from core.hashing import Hasher
-from core.security import generate_jwt, decode_jwt
+from core.security import decode_jwt
 from db.session import get_db
 from db.repository.users import get_user_by_email
 from schemas.token import Token, TokenData
-from schemas.users import UserCreate
 from core.validators import is_valid_email
 
 router = APIRouter()
@@ -41,17 +39,11 @@ async def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token_expire = timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = generate_jwt(
-        data={"email": existing_user.email}, expires_delta=access_token_expire
-    )  # FIXME: Store user.uuid instead of user.email
-
-    # Store access token as cookies, activate httponly for more safety
-    response.set_cookie(
-        key="access_token", value=f"Bearer {access_token}", httponly=True
+    return create_token(
+        data={"sub": "login", "email": existing_user.email},
+        response=response,
+        expire_minute=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
     )
-
-    return Token(access_token=access_token, token_type="bearer")
 
 
 # Overrided class to store token in cookie
