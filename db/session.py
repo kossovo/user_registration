@@ -7,12 +7,12 @@ from core.configs import settings
 
 engine = create_engine(settings.DATABASE_URL)
 
-sessionLocal = sessionmaker(autoflush=False, autocommit=False, bind=engine)
+SessionLocal = sessionmaker(autoflush=False, autocommit=False, bind=engine)
 
 
 def get_db() -> Generator:
     try:
-        db = sessionLocal()
+        db = SessionLocal()
         yield db
     finally:
         db.close()

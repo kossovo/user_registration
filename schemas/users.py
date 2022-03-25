@@ -41,12 +41,6 @@ class UserUpdate(CreateUpdateDictModel):
     password: Optional[str] = None
 
 
-# In some case, we can verified users without sending email (eg. existing users)
-class UserValidation(BaseUser):
-    is_validation_mail_send: bool = True
-    validation_date: datetime = datetime.now()
-
-
 # To return via api (token)
 class UserAPI(BaseUser):
     id: Optional[int] = None

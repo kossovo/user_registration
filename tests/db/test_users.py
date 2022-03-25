@@ -2,9 +2,14 @@ import pytest
 from sqlalchemy.orm import Session
 
 from core.hashing import Hasher
-from db.repository.users import (authenticate, create_new_user, get_user_by_id,
-                                 is_active, update_user_by_id, verify_user)
-from schemas.users import UserCreate, UserUpdate, UserValidation
+from db.repository.users import (
+    authenticate,
+    create_new_user,
+    get_user_by_id,
+    is_active,
+    update_user_by_id,
+)
+from schemas.users import UserCreate, UserUpdate
 from tests.utils.utils import random_email, random_lower_string
 
 
@@ -87,6 +92,4 @@ def test_verify_user(db: Session):
     user = create_new_user(user=user_in, db=db)
     assert user.is_verified is False
 
-    verification_in = UserValidation(email=user.email, is_verified=True)
-    verified_user = verify_user(user_id=user.id, user=verification_in, db=db)
-    assert verified_user.is_verified
+    # FIXME
