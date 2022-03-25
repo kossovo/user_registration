@@ -1,7 +1,7 @@
 import os
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseSettings, EmailStr
+from pydantic import EmailStr
 
 load_dotenv(find_dotenv())
 
@@ -28,11 +28,12 @@ class Settings:
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
     JWT_EMAIL_TOKEN_EXPIRE_MINUTES = 1
-    EMAILS_ENABLED: bool = False
+    EMAILS_ENABLED: bool = os.getenv("EMAILS_ENABLED")
 
     # Mails & SMTP
     MAIL_FROM: str = os.getenv("MAIL_FROM")
     MAIL_FROM_NAME: str = os.getenv("MAIL_FROM_NAME")
+    EMAIL_TEMPLATES_DIR: str = "backend/email-templates/build"
 
     SMTP_USERNAME: str = os.getenv("SMTP_USERNAME")
     SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD")
