@@ -5,6 +5,7 @@ from api.base import api_router
 from core.configs import settings
 from db.base import Base
 from db.session import engine
+from webapp.base import webapps_router
 
 
 def create_tables():
@@ -14,6 +15,7 @@ def create_tables():
 
 def include_router(app):
     app.include_router(api_router)
+    app.include_router(webapps_router)
 
 
 def start_application():
