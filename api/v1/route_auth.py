@@ -1,77 +1,51 @@
-from datetime import timedelta
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
-from jose.exceptions import JWTError
 from sqlalchemy.orm import Session
 
-from api.utils import OAuth2PasswordBearerWithCookie, create_token
+from api.utils import create_token, get_current_user_from_token
 from core.configs import settings
-from core.security import decode_jwt
-from core.validators import is_valid_email
-from db.repository.users import get_user_by_email
+from db.models.users import Users
+from db.repository.users import authenticate
 from db.session import get_db
-from schemas.token import Token, TokenData
+from schemas.token import Token
+from schemas.users import UserAPI
 
 router = APIRouter()
 
 
-@router.post("/token", response_model=Token)
+@router.post("/access-token", response_model=Token, description="Authentification")
 async def login_for_access_token(
     response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
-
     # 'OAuth2PasswordRequestForm' object has no attribute 'email', so we used username file as email field
-    if not is_valid_email(form_data.username):
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Invalid email address",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    existing_user = get_user_by_email(email=form_data.username, db=db)
-    if not existing_user:
+    user = authenticate(email=form_data.username, password=form_data.password, db=db)
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Email '{form_data.username}' already exist",
-            headers={"WWW-Authenticate": "Bearer"},
+            detail="Incorrect email or password",
         )
+    elif not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="This email address isn't active, please contact your admin",
+        )
+    token_data = {"sub": "login", "email": user.email}
 
-    return create_token(
-        data={"sub": "login", "email": existing_user.email},
+    access_token = create_token(
+        data=token_data,
         response=response,
         expire_minute=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
     )
+    return access_token
 
 
-# Overrided class to store token in cookie
-oauth2_scheme = OAuth2PasswordBearerWithCookie(tokenUrl="/auth/token")
-
-
-async def get_current_user_from_token(
-    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
-):
-
-    credential_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credential",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = decode_jwt(token=token)
-        email: str = payload.get("email")
-        code: str = payload.get("code")  # FIXME - The code manageùent has changed
-        if email is None or code is None:
-            raise credential_exception
-
-        token_data = TokenData(email=email, code=code)  # Store to TokenData schema
-    except JWTError:
-        raise credential_exception
-
-    # FIXE - Check code (?)
-    user = get_user_by_email(email == token_data.email, db=db)
-    if user is None:
-        raise credential_exception
-    return user
+@router.post("/login/test-token", response_model=UserAPI)
+def test_token(current_user: Users = Depends(get_current_user_from_token)) -> Any:
+    """
+    Test access token
+    """
+    return current_user
