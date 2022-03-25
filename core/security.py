@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from lib2to3.pgen2.token import tok_name
 from typing import Any, Dict, List, Optional
 
 from jose import jwt
@@ -28,8 +27,8 @@ def generate_jwt(
 
 
 def decode_jwt(
-    token: str,
+    token_string: str,
     key: str = settings.JWT_SECRET_KEY,
     algorithms: List[str] = settings.JWT_ALGORITHM,
 ) -> Dict[str, Any]:
-    return jwt.decode(token=tok_name, key=key, algorithms=algorithms)
+    return jwt.decode(token=token_string, key=key, algorithms=algorithms)
