@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from jose import jwt
 
-from core.configs import settings
+from backend.core.configs import settings
 
 
 def generate_jwt(

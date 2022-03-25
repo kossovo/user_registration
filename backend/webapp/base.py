@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from webapp.auth import route_logins
-from webapp.users import route_users
+from backend.webapp.auth import route_logins
+from backend.webapp.users import route_users
 
 webapps_router = APIRouter(include_in_schema=False)
 

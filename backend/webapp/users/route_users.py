@@ -4,10 +4,10 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from db.repository.users import create_new_user
-from db.session import get_db
-from schemas.users import UserCreate
-from webapp.users.user_forms import UserCreateForm
+from backend.db.repository.users import create_new_user
+from backend.db.session import get_db
+from backend.schemas.users import UserCreate
+from backend.webapp.users.user_forms import UserCreateForm
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")

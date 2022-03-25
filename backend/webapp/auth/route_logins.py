@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from api.v1.route_auth import login_for_access_token
-from db.session import get_db
-from webapp.auth.auth_forms import LoginForm
+from backend.api.v1.route_auth import login_for_access_token
+from backend.db.session import get_db
+from backend.webapp.auth.auth_forms import LoginForm
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")

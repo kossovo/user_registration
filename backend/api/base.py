@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from api.v1 import route_auth, route_users
-from core.configs import settings
+from backend.api.v1 import route_auth, route_users
+from backend.core.configs import settings
 
 api_router = APIRouter()
 

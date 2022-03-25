@@ -16,12 +16,12 @@ from jose.exceptions import JWTError
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from core.configs import settings
-from core.security import decode_jwt, generate_jwt
-from db.models.users import Users
-from db.repository.users import get_user_by_email
-from db.session import get_db
-from schemas.token import Token
+from backend.core.configs import settings
+from backend.core.security import decode_jwt, generate_jwt
+from backend.db.models.users import Users
+from backend.db.repository.users import get_user_by_email
+from backend.db.session import get_db
+from backend.schemas.token import Token
 
 
 def generate_random_code(size: int = 4) -> str:

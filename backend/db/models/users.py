@@ -1,6 +1,6 @@
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
 
-from db.base import Base
+from backend.db.base import Base
 
 
 class Users(Base):

@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from fastapi import Request
 
-from webapp.utils.validators import is_valid_email
+from backend.webapp.utils.validators import is_valid_email
 
 
 class LoginForm:

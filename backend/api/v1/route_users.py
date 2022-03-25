@@ -3,16 +3,16 @@ from typing import Any
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from api.utils import (
+from backend.api.utils import (
     check_verify_code_token,
     generate_random_code,
     send_verification_email,
 )
-from core.configs import settings
-from db.repository.users import create_new_user, get_user_by_email
-from db.session import get_db
-from schemas.mails import MessageSchema
-from schemas.users import UserCreate, UserShow
+from backend.core.configs import settings
+from backend.db.repository.users import create_new_user, get_user_by_email
+from backend.db.session import get_db
+from backend.schemas.mails import MessageSchema
+from backend.schemas.users import UserCreate, UserShow
 
 router = APIRouter()
 

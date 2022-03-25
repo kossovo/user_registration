@@ -3,9 +3,9 @@ from typing import Optional
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
-from core.hashing import Hasher
-from db.models.users import Users
-from schemas.users import UserCreate, UserUpdate
+from backend.core.hashing import Hasher
+from backend.db.models.users import Users
+from backend.schemas.users import UserCreate, UserUpdate
 
 
 def create_new_user(user: UserCreate, db: Session) -> Users:
