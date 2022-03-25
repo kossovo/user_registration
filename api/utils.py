@@ -1,15 +1,26 @@
+import logging
 import random
 import string
-from datetime import timedelta
-from typing import Dict, Optional
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, Optional
 
-from fastapi import HTTPException, Request, Response, status
+import emails
+from emails.template import JinjaTemplate
+from fastapi import Depends, HTTPException, Request, Response, status
 from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
 from fastapi.security.oauth2 import OAuth2
 from fastapi.security.utils import get_authorization_scheme_param
+from jose import jwt
+from jose.exceptions import JWTError
+from pydantic import ValidationError
+from sqlalchemy.orm import Session
 
 from core.configs import settings
-from core.security import generate_jwt
+from core.security import decode_jwt, generate_jwt
+from db.models.users import Users
+from db.repository.users import get_user_by_email
+from db.session import get_db
 from schemas.token import Token
 
 
@@ -37,6 +48,69 @@ def create_token(data: Dict, response: Response, expire_minute: int):
     )
 
     return Token(access_token=access_token, token_type="bearer")
+
+
+def generate_code_verification_token(code: str) -> str:
+    delta = timedelta(hours=settings.JWT_EMAIL_TOKEN_EXPIRE_MINUTES)
+    now = datetime.utcnow()
+    expires = now + delta
+    exp = expires.timestamp()
+
+    encoded_jwt = jwt.encode(
+        {"exp": exp, "nbf": now, "sub": code},
+        key=settings.SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+    )
+    return encoded_jwt
+
+
+def send_email(
+    email_to: str,
+    subject_template: str = "",
+    html_template: str = "",
+    environment: Dict[str, Any] = {},
+) -> None:
+    assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
+
+    message = emails.Message(
+        subject=JinjaTemplate(subject_template),
+        html=JinjaTemplate(html_template),
+        mail_from=(settings.MAIL_FROM_NAME, settings.MAIL_FROM),
+    )
+    smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
+    if settings.SMTP_TLS:
+        smtp_options["tls"] = True
+    if settings.SMTP_USERNAME:
+        smtp_options["user"] = settings.SMTP_USERNAME
+    if settings.SMTP_PASSWORD:
+        smtp_options["password"] = settings.SMTP_PASSWORD
+
+    response = message.send(to=email_to, render=environment, smtp=smtp_options)
+    logging.info(f"send email result: {response}")
+
+
+def send_verification_email(email_to: str, verification_code: str) -> None:
+
+    project_name = settings.PROJECT_NAME
+    link = f"{settings.APPS_HOST}/{settings.API_V1_STR}/verify-code/{email_to}"
+    subject = f"{project_name} - Activate your account"
+
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_account.html") as f:
+        template_str = f.read()
+
+    send_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": settings.PROJECT_NAME,
+            "verification_code": verification_code,
+            "email": email_to,
+            "link": link,
+        },
+    )
+    # Generate token
+    generate_code_verification_token(email_to)
 
 
 class OAuth2PasswordBearerWithCookie(OAuth2):
@@ -84,3 +158,41 @@ class OAuth2PasswordBearerWithCookie(OAuth2):
             else:
                 return None
         return param
+
+
+# Overrided class to store token in cookie
+oauth2_scheme = OAuth2PasswordBearerWithCookie(
+    tokenUrl=f"{settings.API_V1_STR}/auth/access-token"
+)
+
+
+def get_current_user_from_token(
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+) -> Users:
+
+    try:
+        payload = decode_jwt(token=token)
+
+    except (JWTError, ValidationError):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credential",
+        )
+    user = get_user_by_email(email=payload.get("email"))
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+def check_verify_code_token(token: str) -> Optional[str]:
+    try:
+        decoded_token = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=settings.JWT_ALGORITHM
+        )
+        code = decoded_token["code"]
+        print(f"********** Verification code: '{code}' **********")
+        return code
+
+    except jwt.ExpiredSignatureError:
+        logging.warning("The given token has expired")
+        return None
