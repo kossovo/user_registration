@@ -3,12 +3,15 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from core.configs import settings
-from db.models.users import Users
-from db.repository.users import (create_new_user, get_user_by_email,
-                                 update_user_by_id)
-from schemas.users import UserCreate, UserUpdate
-from tests.utils.utils import random_email, random_lower_string
+from backend.core.configs import settings
+from backend.db.models.users import Users
+from backend.db.repository.users import (
+    create_new_user,
+    get_user_by_email,
+    update_user_by_id,
+)
+from backend.schemas.users import UserCreate, UserUpdate
+from backend.tests.utils.utils import random_email, random_lower_string
 
 
 def user_authentication_headers(

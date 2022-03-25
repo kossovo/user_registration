@@ -4,8 +4,8 @@ from typing import Dict
 from fastapi.testclient import TestClient
 import pytest
 
-from core.configs import settings
-from tests.utils.utils import random_email, random_lower_string
+from backend.core.configs import settings
+from backend.tests.utils.utils import random_email, random_lower_string
 
 
 def test_create_token():

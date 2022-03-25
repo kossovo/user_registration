@@ -8,7 +8,9 @@ from sqlalchemy.orm import Session
 
 # this is to include backend dir in sys.path so that we can import from db,main.py
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+sys.path.append(BASE_DIR)
 
 from core.configs import settings
 from db.session import SessionLocal

@@ -1,16 +1,16 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from core.hashing import Hasher
-from db.repository.users import (
+from backend.core.hashing import Hasher
+from backend.db.repository.users import (
     authenticate,
     create_new_user,
     get_user_by_id,
     is_active,
     update_user_by_id,
 )
-from schemas.users import UserCreate, UserUpdate
-from tests.utils.utils import random_email, random_lower_string
+from backend.schemas.users import UserCreate, UserUpdate
+from backend.tests.utils.utils import random_email, random_lower_string
 
 
 def test_create_user(db: Session) -> None:
