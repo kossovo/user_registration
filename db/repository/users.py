@@ -1,15 +1,16 @@
+from typing import Optional
+
+import pytest
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from core.hashing import Hasher
 from db.models.users import Users
-from schemas.users import UserCreate, UserValidation
+from schemas.users import UserCreate, UserUpdate, UserValidation
 
 
 def create_new_user(user: UserCreate, db: Session) -> Users:
     created_user = Users(
-        # TODO: Add a uuid field
-        # username=user.username,
         email=user.email,
         hashed_password=Hasher.get_password_hash(user.password),
         is_active=user.is_active,
@@ -25,12 +26,48 @@ def get_user_by_email(email: str, db: Session) -> Users:
     return db.query(Users).filter(Users.email == email).first()
 
 
-def update_user_by_id(user_id: int, user: UserValidation, db: Session):
+def get_user_by_id(user_id: int, db: Session) -> Users:
+    return db.query(Users).filter(Users.id == user_id).first()
+
+
+def update_user_by_id(user_id: int, user: UserUpdate, db: Session):
     existing_user = db.query(Users).filter(Users.id == user_id)
     if not existing_user.first():
-        return 0
+        return None
 
     update_data = jsonable_encoder(user.dict(exclude_unset=True))
     existing_user.update(update_data)
     db.commit()
-    return 1
+    return existing_user.first()
+
+
+def verify_user(user_id: int, user: UserValidation, db: Session):
+    existing_user = db.query(Users).filter(Users.id == user_id)
+    if not existing_user.first():
+        return None
+    if is_verified(existing_user.first()):
+        return existing_user
+
+    update_data = jsonable_encoder(user.dict(exclude_unset=True))
+    existing_user.update(update_data)
+    db.commit()
+    return existing_user.first()
+
+
+def authenticate(email: str, password: str, db: Session) -> Optional[Users]:
+    user = get_user_by_email(email=email, db=db)
+    if not user:
+        return None
+    if not Hasher.verify_password(
+        plain_password=password, hash_password=user.hashed_password
+    ):
+        return None
+    return user
+
+
+def is_active(user: Users) -> bool:
+    return user.is_active
+
+
+def is_verified(user: Users) -> bool:
+    return user.is_verified

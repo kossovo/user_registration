@@ -5,8 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from core.configs import settings
 
-SQLALCHEMY_DB_URL = settings.DATABASE_URL
-engine = create_engine(SQLALCHEMY_DB_URL)
+engine = create_engine(settings.DATABASE_URL)
 
 sessionLocal = sessionmaker(autoflush=False, autocommit=False, bind=engine)
 
