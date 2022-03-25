@@ -1,14 +1,19 @@
 import os
 
 from dotenv import find_dotenv, load_dotenv
+from pydantic import BaseSettings, EmailStr
 
 load_dotenv(find_dotenv())
 
 
 class Settings:
+
     PROJECT_TITLE: str = "Users registration API"
     PROJECT_VERSION: str = "1.0.1"
     PROJECT_DESCRIPTION: str = "Building a user registration API"
+    API_V1_STR: str = "/api/v1"
+
+    APPS_HOST: str = os.getenv("APPS_HOST")
 
     DATABASE_HOST: str = os.getenv("POSTGRES_HOST")
     DATABASE_NAME: str = os.getenv("POSTGRES_DB")
@@ -21,19 +26,25 @@ class Settings:
     JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
     JWT_ALGORITHM = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 30
-    JWT_EMAIL_TOKEN_EXPIRE_MINUTES = 1
 
-    # Mail
-    MAIL_USERNAME: str = os.getenv("MAIL_USERNAME")
-    MAIL_PASSWORD: str = os.getenv("MAIL_PASSWORD")
+    JWT_EMAIL_TOKEN_EXPIRE_MINUTES = 1
+    EMAILS_ENABLED: bool = False
+
+    # Mails & SMTP
     MAIL_FROM: str = os.getenv("MAIL_FROM")
     MAIL_FROM_NAME: str = os.getenv("MAIL_FROM_NAME")
-    MAIL_PORT: int = os.getenv("MAIL_PORT")
-    MAIL_SERVER: str = os.getenv("MAIL_SERVER")
-    MAIL_TLS: bool = os.getenv("MAIL_TLS")
-    MAIL_SSL: bool = os.getenv("MAIL_SSL")
-    USE_CREDENTIALS: bool = os.getenv("USE_CREDENTIALS")
-    VALIDATE_CERTS: bool = os.getenv("VALIDATE_CERTS")
+
+    SMTP_USERNAME: str = os.getenv("SMTP_USERNAME")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD")
+    SMTP_PORT: int = os.getenv("SMTP_PORT")
+    SMTP_HOST: str = os.getenv("SMTP_HOST")
+    SMTP_TLS: bool = os.getenv("SMTP_TLS")
+    SMTP_SSL: bool = os.getenv("SMTP_SSL")
+    SMTP_USE_CREDENTIALS: bool = os.getenv("SMTP_USE_CREDENTIALS")
+    SMTP_VALIDATE_CERTS: bool = os.getenv("SMTP_VALIDATE_CERTS")
+
+    # Test
+    EMAIL_TEST_USER: EmailStr = "test@dailymotion.local"
 
 
 settings = Settings()
