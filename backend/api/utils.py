@@ -1,6 +1,7 @@
 import logging
 import random
 import string
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -58,7 +59,7 @@ def generate_code_verification_token(code: str) -> str:
 
     encoded_jwt = jwt.encode(
         {"exp": exp, "nbf": now, "sub": code},
-        key=settings.SECRET_KEY,
+        key=settings.JWT_SECRET_KEY,
         algorithm=settings.JWT_ALGORITHM,
     )
     return encoded_jwt
@@ -70,7 +71,9 @@ def send_email(
     html_template: str = "",
     environment: Dict[str, Any] = {},
 ) -> None:
-    assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
+
+    if not settings.EMAILS_ENABLED:
+        raise NotImplementedError("no provided configuration for email variables")
 
     message = emails.Message(
         subject=JinjaTemplate(subject_template),
@@ -91,11 +94,16 @@ def send_email(
 
 def send_verification_email(email_to: str, verification_code: str) -> None:
 
-    project_name = settings.PROJECT_NAME
+    project_name = settings.PROJECT_TITLE
     link = f"{settings.APPS_HOST}/{settings.API_V1_STR}/verify-code/{email_to}"
     subject = f"{project_name} - Activate your account"
 
-    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_account.html") as f:
+    BASE_DIR = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    )
+    template_filepath = os.path.join(BASE_DIR, settings.EMAIL_TEMPLATES_DIR)
+
+    with open(Path(template_filepath) / "new_account.html") as f:
         template_str = f.read()
 
     send_email(
@@ -103,7 +111,7 @@ def send_verification_email(email_to: str, verification_code: str) -> None:
         subject_template=subject,
         html_template=template_str,
         environment={
-            "project_name": settings.PROJECT_NAME,
+            "project_name": settings.PROJECT_TITLE,
             "verification_code": verification_code,
             "email": email_to,
             "link": link,
