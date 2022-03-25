@@ -13,4 +13,5 @@ requests
 pytest-cov
 python-jose[cryptography]
 python-multipart
-fastapi-mail
+requests
+emails
