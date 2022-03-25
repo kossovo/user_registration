@@ -1,0 +1,24 @@
+{% extends "shared/base.html" %}
+
+{% block title %}
+    <title> User Registration Apps [POC]</title>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="display-4 text-danger"> Find Jods...</h1>
+        <div class="row">
+            {% for user in users %}
+            <div class="col-lg-4 col-md-3 col-sm-10 mr-auto">
+                {% with obj=user%}
+                    {% include 'components/card.html' %}
+                {% endwith %}
+                {% if loop.index % 3 %}
+                    </div>
+                {% else %}
+                    </div></div><br/><div class="row">
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
