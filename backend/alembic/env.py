@@ -6,15 +6,16 @@ from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from db.base import Base
+from backend.db.base import Base
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 sys.path.append(BASE_DIR)
 
 config = context.config
 
-config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
 
 
 fileConfig(config.config_file_name)
