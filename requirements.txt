@@ -18,3 +18,4 @@ emails
 tenacity
 jinja2
 aiofiles
+mock
