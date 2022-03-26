@@ -1,21 +1,22 @@
 from unittest import result
+
 import emails
 import pytest
-
 from fastapi import Response
 from jose import jwt
 from mock import patch
+
 from backend.api.utils import (
-    generate_random_code,
     check_verify_code_token,
     create_token,
     decode_jwt,
+    generate_code_verification_token,
+    generate_random_code,
     send_email,
     send_verification_email,
-    generate_code_verification_token,
 )
-from backend.tests.utils.utils import random_email, random_lower_string
 from backend.core.configs import settings
+from backend.tests.utils.utils import random_email, random_lower_string
 
 
 def test_generate_random_code():
@@ -71,6 +72,35 @@ def test_send_mail_emails_not_enabled(mock_sendmail):
             environment={},
         )
     assert "no provided configuration" in str(errmsg.value)
+
+
+@patch("emails.Message")
+def test_send_mail_emails_enabled_without_smtp_server(mock_sendmail):
+    """
+    Case we enable sending email, but don't set SMTP server config. Here we only check the server host
+    """
+
+    email = random_email()
+    subject = "Test mail Email Enabled Without SMTP serveur host"
+    html = "<html>TEST MAIL K.O </html>"
+
+    settings.EMAILS_ENABLED = True
+    settings.SMTP_HOST = ""
+
+    assert settings.EMAILS_ENABLED
+
+    instance = mock_sendmail.return_value
+    instance.send.side_effect = ValueError({})
+
+    # Check raises and exception when sending the message
+    with pytest.raises(ValueError) as errmsg:
+        send_email(
+            email_to=email,
+            html_template=html,
+            subject_template=subject,
+            environment={},
+        )
+    assert "Invalid SMTP" in str(errmsg.value)
 
 
 @patch("emails.Message")
