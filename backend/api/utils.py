@@ -72,15 +72,17 @@ def send_email(
     environment: Dict[str, Any] = {},
 ) -> None:
 
+    smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
     if not settings.EMAILS_ENABLED:
         raise NotImplementedError("no provided configuration for email variables")
+    if not smtp_options.get("host"):
+        raise ValueError("Invalid hostname")
 
     message = emails.Message(
         subject=JinjaTemplate(subject_template),
         html=JinjaTemplate(html_template),
         mail_from=(settings.MAIL_FROM_NAME, settings.MAIL_FROM),
     )
-    smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
     if settings.SMTP_TLS:
         smtp_options["tls"] = True
     if settings.SMTP_USERNAME:
@@ -90,6 +92,7 @@ def send_email(
 
     response = message.send(to=email_to, render=environment, smtp=smtp_options)
     logging.info(f"send email result: {response}")
+    return response
 
 
 def send_verification_email(email_to: str, verification_code: str) -> None:
@@ -118,7 +121,7 @@ def send_verification_email(email_to: str, verification_code: str) -> None:
         },
     )
     # Generate token
-    generate_code_verification_token(email_to)
+    return generate_code_verification_token(verification_code)
 
 
 class OAuth2PasswordBearerWithCookie(OAuth2):
@@ -195,12 +198,10 @@ def get_current_user_from_token(
 def check_verify_code_token(token: str) -> Optional[str]:
     try:
         decoded_token = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=settings.JWT_ALGORITHM
+            token, settings.JWT_SECRET_KEY, algorithms=settings.JWT_ALGORITHM
         )
-        code = decoded_token["code"]
-        print(f"********** Verification code: '{code}' **********")
-        return code
 
-    except jwt.ExpiredSignatureError:
-        logging.warning("The given token has expired")
-        return None
+        return decoded_token.get("sub")
+
+    except (JWTError, ValidationError):
+        raise jwt.ExpiredSignatureError("Invalid token")
