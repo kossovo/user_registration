@@ -76,7 +76,7 @@ def send_email(
     if not settings.EMAILS_ENABLED:
         raise NotImplementedError("no provided configuration for email variables")
     if not smtp_options.get("host"):
-        raise ValueError("Invalid hostname")
+        raise ValueError("Invalid SMTP hostname")
 
     message = emails.Message(
         subject=JinjaTemplate(subject_template),
