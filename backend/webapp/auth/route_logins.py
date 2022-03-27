@@ -7,7 +7,7 @@ from backend.db.session import get_db
 from backend.webapp.auth.auth_forms import LoginForm
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="backend/templates")
 
 
 @router.get("/login")
