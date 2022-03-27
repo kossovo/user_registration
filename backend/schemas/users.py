@@ -22,13 +22,11 @@ class BaseUser(CreateUpdateDictModel):
     """Base User model."""
 
     email: EmailStr
-    is_active: Optional[bool] = True
 
 
 class UserCreate(BaseUser):
     """Create User model"""
 
-    email: EmailStr
     password: str
 
 
@@ -39,6 +37,8 @@ class UserUpdate(CreateUpdateDictModel):
     password: Optional[str] = None
     is_active: Optional[bool] = True
     is_verified: Optional[bool] = False
+    is_validation_mail_send: Optional[bool] = False
+    validation_date: Optional[datetime] = None
 
 
 # To return via api (token)
@@ -50,9 +50,10 @@ class UserAPI(BaseUser):
 
 
 class UserShow(BaseUser):
-    email: EmailStr
     is_active: bool
     is_verified: Optional[bool] = False
+    is_validation_mail_send: Optional[bool] = False
+    validation_date: Optional[datetime] = None
 
     class Config:
         orm_mode = True
