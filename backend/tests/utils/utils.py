@@ -1,8 +1,5 @@
 import random
 import string
-from typing import Dict
-
-from backend.core.configs import settings
 
 
 def random_lower_string() -> str:
@@ -11,3 +8,16 @@ def random_lower_string() -> str:
 
 def random_email() -> str:
     return f"{random_lower_string()}@{random_lower_string()}.com"
+
+
+def get_token_from_link(link: str) -> str:
+    """
+    This helper function receive a link ends with a token and return the token
+
+    Args:
+        link (str): The url to parse
+
+    Returns:
+        str: token
+    """
+    return link.rsplit("/", 1)[-1]
