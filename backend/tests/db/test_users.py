@@ -1,7 +1,9 @@
-import pytest
+from mock import patch
 from sqlalchemy.orm import Session
 
+from backend.core.configs import settings
 from backend.core.hashing import Hasher
+from backend.db.models.users import Users
 from backend.db.repository.users import (
     authenticate,
     create_new_user,
@@ -10,6 +12,11 @@ from backend.db.repository.users import (
     update_user_by_id,
 )
 from backend.schemas.users import UserCreate, UserUpdate
+from backend.tests.utils.users import (
+    authentication_token_from_email,
+    create_random_user,
+    user_authentication_headers,
+)
 from backend.tests.utils.utils import random_email, random_lower_string
 
 
@@ -59,24 +66,24 @@ def test_check_if_user_is_active_inactive(db: Session) -> None:
 
 
 def test_user_isnt_automatically_verified(db: Session) -> None:
-    username = random_email()
+    email = random_email()
     password = random_lower_string()
-    user_in = UserCreate(email=username, password=password)
+    user_in = UserCreate(email=email, password=password)
     user = create_new_user(user=user_in, db=db)
+
     assert user.is_verified is False
 
 
-@pytest.mark.skip  # FIXME
 def test_update_user(db: Session) -> None:
     password = random_lower_string()
     email = random_email()
     user_in = UserCreate(email=email, password=password)
     user = create_new_user(user=user_in, db=db)
-    assert user
+    assert user.id
 
     new_password = random_lower_string()
-    user_in_update = UserUpdate(password=new_password)
-    update_user_by_id(user_id=user.id, user=user_in_update, db=db)
+    user_up = UserUpdate(password=new_password)
+    update_user_by_id(user_id=user.id, user=user_up, db=db)
 
     user_2 = get_user_by_id(user_id=user.id, db=db)
 
@@ -85,11 +92,21 @@ def test_update_user(db: Session) -> None:
     assert Hasher.verify_password(new_password, user_2.hashed_password)
 
 
-def test_verify_user(db: Session):
-    username = random_email()
-    password = random_lower_string()
-    user_in = UserCreate(email=username, password=password)
-    user = create_new_user(user=user_in, db=db)
-    assert user.is_verified is False
+def test_create_random_user(db: Session):
+    random_user = create_random_user(db=db)
+    assert isinstance(random_user, Users)
 
-    # FIXME
+
+def test_authentication_token_from_email(client, db):
+    user = create_random_user(db=db)
+
+    user_token = authentication_token_from_email(client=client, db=db, email=user.email)
+    assert user_token.get("Authorization")
+
+
+def test_user_authentication_headers(client):
+    email = random_email()
+    password = random_lower_string()
+
+    result = user_authentication_headers(client=client, email=email, password=password)
+    assert result.get("Authorization")
