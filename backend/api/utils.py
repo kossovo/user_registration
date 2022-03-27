@@ -1,7 +1,7 @@
 import logging
+import os
 import random
 import string
-import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -51,14 +51,17 @@ def create_token(data: Dict, response: Response, expire_minute: int):
     return Token(access_token=access_token, token_type="bearer")
 
 
-def generate_code_verification_token(code: str) -> str:
+def generate_code_verification_token(code: str, email: str) -> str:
+    """
+    Generate a JWT containing the code, mail and expire time, for email verification
+    """
     delta = timedelta(hours=settings.JWT_EMAIL_TOKEN_EXPIRE_MINUTES)
     now = datetime.utcnow()
     expires = now + delta
     exp = expires.timestamp()
 
     encoded_jwt = jwt.encode(
-        {"exp": exp, "nbf": now, "sub": code},
+        {"exp": exp, "nbf": now, "sub": code, "email": email},
         key=settings.JWT_SECRET_KEY,
         algorithm=settings.JWT_ALGORITHM,
     )
@@ -98,7 +101,6 @@ def send_email(
 def send_verification_email(email_to: str, verification_code: str) -> None:
 
     project_name = settings.PROJECT_TITLE
-    link = f"{settings.APPS_HOST}/{settings.API_V1_STR}/verify-code/{email_to}"
     subject = f"{project_name} - Activate your account"
 
     BASE_DIR = os.path.dirname(
@@ -108,6 +110,12 @@ def send_verification_email(email_to: str, verification_code: str) -> None:
 
     with open(Path(template_filepath) / "new_account.html") as f:
         template_str = f.read()
+
+    # Generate token
+    verify_token = generate_code_verification_token(
+        code=verification_code, email=email_to
+    )
+    link = f"{settings.APPS_HOST}/{settings.API_V1_STR}/verify/{verify_token}"
 
     send_email(
         email_to=email_to,
@@ -120,8 +128,7 @@ def send_verification_email(email_to: str, verification_code: str) -> None:
             "link": link,
         },
     )
-    # Generate token
-    return generate_code_verification_token(verification_code)
+    return link
 
 
 class OAuth2PasswordBearerWithCookie(OAuth2):
@@ -182,26 +189,15 @@ def get_current_user_from_token(
 ) -> Users:
 
     try:
-        payload = decode_jwt(token=token)
+        payload = decode_jwt(token_string=token)
 
     except (JWTError, ValidationError):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credential",
         )
-    user = get_user_by_email(email=payload.get("email"))
+    user = get_user_by_email(email=payload.get("sub"), db=db)
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
-
-
-def check_verify_code_token(token: str) -> Optional[str]:
-    try:
-        decoded_token = jwt.decode(
-            token, settings.JWT_SECRET_KEY, algorithms=settings.JWT_ALGORITHM
-        )
-
-        return decoded_token.get("sub")
-
-    except (JWTError, ValidationError):
-        raise jwt.ExpiredSignatureError("Invalid token")
