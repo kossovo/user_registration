@@ -1,26 +1,30 @@
 import json
-from typing import Dict
 
-from fastapi.testclient import TestClient
 import pytest
 
 from backend.core.configs import settings
+from backend.tests.conftest import normal_user_token_headers
 from backend.tests.utils.utils import random_email, random_lower_string
 
 
-def test_create_token():
-    pass
+@pytest.mark.skip
+def test_login_for_access_token(client):  # FXIME
+
+    data = {
+        "email": random_email(),
+        "password": random_lower_string(),
+    }
+    response = client.post(f"{settings.API_V1_STR}/auth/access-token", json.dumps(data))
+
+    assert response.status_code == 200
+    assert response.token_type == "bearer"
 
 
-def test_login_for_access_token():
-    pass
-
-
-def test_get_current_user_from_token():
-    pass
-
-
-def test_get_current_user_from_token(client: TestClient) -> None:
+@pytest.mark.skip
+def test_get_current_user_from_token(client):  # FXIME
+    """
+    Check user login using API
+    """
     test_email = random_email()
     test_password = random_lower_string()
 
@@ -36,23 +40,13 @@ def test_get_current_user_from_token(client: TestClient) -> None:
         "username": test_email,
         "password": test_password,
     }
+
     r = client.post(
-        f"{settings.API_V1_STR}/auth/access-token", data=json.dumps(login_data)
+        f"{settings.API_V1_STR}/auth/access-token",
+        data=json.dumps(login_data),
+        headers=normal_user_token_headers,
     )
     tokens = r.json()
     assert r.status_code == 200
     assert "access_token" in tokens
     assert tokens["access_token"]
-
-
-@pytest.mark.skip
-def test_use_access_token(
-    client: TestClient, superuser_token_headers: Dict[str, str]
-) -> None:
-    r = client.post(
-        f"{settings.API_V1_STR}/login/test-token",
-        headers=superuser_token_headers,
-    )
-    result = r.json()
-    assert r.status_code == 200
-    assert "email" in result
