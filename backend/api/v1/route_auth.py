@@ -4,13 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from backend.api.utils import create_token, get_current_user_from_token
+from backend.api.utils import create_token
 from backend.core.configs import settings
-from backend.db.models.users import Users
 from backend.db.repository.users import authenticate
 from backend.db.session import get_db
 from backend.schemas.token import Token
-from backend.schemas.users import UserAPI
 
 router = APIRouter()
 
@@ -30,10 +28,10 @@ async def login_for_access_token(
         )
     elif not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="This email address isn't active, please contact your admin",
         )
-    token_data = {"sub": "login", "email": user.email}
+    token_data = {"sub": user.email, "type": "login"}
 
     access_token = create_token(
         data=token_data,
@@ -41,11 +39,3 @@ async def login_for_access_token(
         expire_minute=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
     )
     return access_token
-
-
-@router.post("/login/test-token", response_model=UserAPI)
-def test_token(current_user: Users = Depends(get_current_user_from_token)) -> Any:
-    """
-    Test access token
-    """
-    return current_user
