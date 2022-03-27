@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from jose import jwt
+from jose.exceptions import JWTError
 
 from backend.core.configs import settings
 
@@ -31,4 +32,10 @@ def decode_jwt(
     key: str = settings.JWT_SECRET_KEY,
     algorithms: List[str] = settings.JWT_ALGORITHM,
 ) -> Dict[str, Any]:
-    return jwt.decode(token=token_string, key=key, algorithms=algorithms)
+
+    try:
+        token_data = jwt.decode(token=token_string, key=key, algorithms=algorithms)
+    except JWTError as exep:
+        raise JWTError(exep)
+
+    return token_data

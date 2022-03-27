@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 
 from backend.api.base import api_router
 from backend.core.configs import settings
