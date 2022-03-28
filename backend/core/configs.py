@@ -1,5 +1,5 @@
 import os
-
+import secrets
 from dotenv import find_dotenv, load_dotenv
 from pydantic import EmailStr
 
@@ -23,7 +23,7 @@ class Settings:
     DATABASE_URL = str = os.getenv("DATABASE_URL")
 
     # Getting JWT params
-    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
+    JWT_SECRET_KEY: str = secrets.token_hex()
     JWT_ALGORITHM = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
