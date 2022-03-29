@@ -115,7 +115,7 @@ def send_verification_email(email_to: str, verification_code: str) -> None:
     verify_token = generate_code_verification_token(
         code=verification_code, email=email_to
     )
-    link = f"{settings.APPS_HOST}/{settings.API_V1_STR}/verify/{verify_token}"
+    link = f"{settings.APPS_HOST}{settings.API_V1_STR}/verify/{verify_token}"
 
     send_email(
         email_to=email_to,
