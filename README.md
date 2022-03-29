@@ -60,6 +60,16 @@ http://localhost:8050
 docker-compose run app pytest .
 ```
 
+### Launch load testing
+To improve this user registration API, I have setup a load testing script base on [locust](https://locust.io/). To run this this, you have to firtly run the app server, then run `locust` script using the following command:
+
+```
+locust -f backend/tests/load_testing/locust_test.py
+```
+And then, navigate to [http://localhost:8089](http://localhost:8089)
+
+The locust try to create a user by the `register` entrypoint
+
 ## User registration API testing
 [![API docs](docs/images/user_registration_api.png)](https://github.com/kossovo/user_registration)
 
@@ -122,6 +132,7 @@ You can also test other entry points like `get`, `update`, `all` to see how this
 This is a basic login system make from scratch, in a couple of days. It may be improve by several ways, like (non-exhaustive list):
 
 * Use [Gunicorn](https://gunicorn.org/) (or also Uvicorn) as a process manager with Uvicorn workers to take advantage of multi-core CPUs, to run multiple processes in parallel.
+* Setup a Nginx server 
 * Add a frondend wep apps, to make test smooth
 * Adding more unit tests
 * We can also optimize the docker-compose file and environment variable management.
